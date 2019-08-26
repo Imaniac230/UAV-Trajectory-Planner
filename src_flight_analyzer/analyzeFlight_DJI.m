@@ -4,6 +4,8 @@ function [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut,iAll] = analyzeFli
 %   This function compares the real flight trajecotry of a DJI drone [Realatjr] with the planned trajectory [PlanTrj] and a given digital
 %   elevation model [TerrMod] and plots them out. Plots can be specified by optional parameters.
 %   Optional parameters include: 'TrajFindPrec', 'TerrainRes', 'RealTrajMode', 'TerrainMode', 'PlanTrajMode', 'DemRes', 'ShowPlots'
+%   Additionaly indexes of the located mission trajectory points are returned in [iAll] so that:
+%       RealTrj(iAll,3) == RealTrjOut or RealTrj(iAll(1):iAll(end),3) == RealTrjOut.
 %
 %   [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut,iAll] = ANALYZEFLIGHT_DJI(RealTrj,PlanTrj,TerrMod)
 %   [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut,iAll] = ANALYZEFLIGHT_DJI(RealTrj,PlanTrj,TerrMod,ParName1,ParValue1,...,ParNamen,ParValuen)
