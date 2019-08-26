@@ -1,12 +1,12 @@
-function [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut] = analyzeFlight_DJI(RealTrj,PlanTrj,TerrMod,varargin)
+function [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut,iAll] = analyzeFlight_DJI(RealTrj,PlanTrj,TerrMod,varargin)
 %ANALYZEFLIGHT_DJI - Analyze flight data from the DJI drone
 %
 %   This function compares the real flight trajecotry of a DJI drone [Realatjr] with the planned trajectory [PlanTrj] and a given digital
 %   elevation model [TerrMod] and plots them out. Plots can be specified by optional parameters.
 %   Optional parameters include: 'TrajFindPrec', 'TerrainRes', 'RealTrajMode', 'TerrainMode', 'PlanTrajMode', 'DemRes', 'ShowPlots'
 %
-%   [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut] = ANALYZEFLIGHT_DJI(RealTrj,PlanTrj,TerrMod)
-%   [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut] = ANALYZEFLIGHT_DJI(RealTrj,PlanTrj,TerrMod,ParName1,ParValue1,...,ParNamen,ParValuen)
+%   [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut,iAll] = ANALYZEFLIGHT_DJI(RealTrj,PlanTrj,TerrMod)
+%   [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut,iAll] = ANALYZEFLIGHT_DJI(RealTrj,PlanTrj,TerrMod,ParName1,ParValue1,...,ParNamen,ParValuen)
 %
 %   Input trajectories [RealTrj], [PlanTrj] and terrain model [TerrMod] must be matrices of geodetic (polar) coordinates of format
 %   [latitude longitude height], where height must be a positive value in [m]. Terrain model resolution [TerrModRes] must be a
@@ -152,9 +152,26 @@ PlanTrjL(:,3) = PlanTrj(:,3);
 %%
 %najdenie trajektorie %locating of the trajectory
 iAll = zeros(size(PlanTrjL,1),1);
+RealTrjL_backup = RealTrjL;
 %pociatocny a konecny bod %first and final waypoint
-iAll(1) = 1;
-while (iAll(1) > iAll(end))
+RealTrjL((sqrt((RealTrjL(:,1) - PlanTrjL(1,1)).^2 + (RealTrjL(:,2) - PlanTrjL(1,2)).^2) < TrjFindPrec),4) = 1;
+if (sum(RealTrjL(:,4)) == 0)
+    error(errFind,TrjFindPrec)
+end
+iAll(1) = find(RealTrjL(:,4),1,'last');
+RealTrjL(:,4) = 0;
+
+RealTrjL((sqrt((RealTrjL(:,1) - PlanTrjL(end,1)).^2 + (RealTrjL(:,2) - PlanTrjL(end,2)).^2) < TrjFindPrec),4) = 1;
+if (sum(RealTrjL(:,4)) == 0)
+    error(errFind,TrjFindPrec)
+end
+iAll(end) = find(RealTrjL(:,4),1,'first');
+RealTrjL(:,4) = 0;
+
+if (iAll(1) > iAll(end))
+    SecondCase = false;
+    RealTrjL(1:iAll(1)-1,:) = NaN;
+    
     RealTrjL((sqrt((RealTrjL(:,1) - PlanTrjL(1,1)).^2 + (RealTrjL(:,2) - PlanTrjL(1,2)).^2) < TrjFindPrec),4) = 1;
     if (sum(RealTrjL(:,4)) == 0)
         error(errFind,TrjFindPrec)
@@ -164,14 +181,28 @@ while (iAll(1) > iAll(end))
 
     RealTrjL((sqrt((RealTrjL(:,1) - PlanTrjL(end,1)).^2 + (RealTrjL(:,2) - PlanTrjL(end,2)).^2) < TrjFindPrec),4) = 1;
     if (sum(RealTrjL(:,4)) == 0)
-        error(errFind,TrjFindPrec)
+        SecondCase = true;
     end
     iAll(end) = find(RealTrjL(:,4),1,'first');
     RealTrjL(:,4) = 0;
+    
+    if (SecondCase)
+        RealTrjL = RealTrjL_backup;
+        RealTrjL(iAll(end)+1:end,:) = NaN;
+        
+        RealTrjL((sqrt((RealTrjL(:,1) - PlanTrjL(1,1)).^2 + (RealTrjL(:,2) - PlanTrjL(1,2)).^2) < TrjFindPrec),4) = 1;
+        if (sum(RealTrjL(:,4)) == 0)
+            error(errFind,TrjFindPrec)
+        end
+        iAll(1) = find(RealTrjL(:,4),1,'last');
+        RealTrjL(:,4) = 0;
 
-    if (iAll(1) > iAll(end))
-        RealTrjL(iAll(1):end,:) = [];
-        RealTrjL(1:iAll(end),:) = [];
+        RealTrjL((sqrt((RealTrjL(:,1) - PlanTrjL(end,1)).^2 + (RealTrjL(:,2) - PlanTrjL(end,2)).^2) < TrjFindPrec),4) = 1;
+        if (sum(RealTrjL(:,4)) == 0)
+            error(errFind,TrjFindPrec)
+        end
+        iAll(end) = find(RealTrjL(:,4),1,'first');
+        RealTrjL(:,4) = 0;
     end
 end
 %zvysne body %all other waypoints
