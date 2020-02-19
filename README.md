@@ -1,7 +1,7 @@
 # UAV Trajectory Planner
 
 Source files for the vertical and horizontal UAV trajectory planner and flight analyzer. This project was created as a bachelor's thesis.
-Full thesis in native Slovak language can be found in: https://www.vutbr.cz/studenti/zav-prace/detail/119130
+Full thesis in native Slovak language can be found [here](https://www.vutbr.cz/www_base/zav_prace_soubor_verejne.php?file_id=190920).
 
 # File structure
 
