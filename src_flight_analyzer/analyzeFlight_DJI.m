@@ -40,10 +40,13 @@ function [RealTrjOut,RealTrjDistOut,TerrTrjOut,TerrTrjDistOut,iAll] = analyzeFli
 %   'ShowPlots' must be a single integer value from 0 to 1, where:
 %                   [0->plots not displayed, 1->plots displayed]
 %                   (default: 1)
+%   'ExternDist' vector of positive values specifying the distance travelled externally
+%                given in meters [m] and it's length must correspond to the length of [RealTrj]
+%                   If used, all distances will be calculated using this parameter!
 
 %%
 %inicializacne parametre %initial parameters
-AllowedParams = {'TrajFindPrec', 'TerrainRes', 'RealTrajMode', 'TerrainMode', 'PlanTrajMode', 'DemRes', 'ShowPlots'};
+AllowedParams = {'TrajFindPrec', 'TerrainRes', 'RealTrajMode', 'TerrainMode', 'PlanTrajMode', 'DemRes', 'ShowPlots', 'ExternDist'};
 
 errargs = sprintf('''%s'', ', AllowedParams{1:end-1});
 errargs = sprintf('%s''%s''. ',errargs, AllowedParams{end});
@@ -62,6 +65,7 @@ errTerrMode = 'Invalid real terrain plot mode (%dth parameter). Parameter must b
 errPlanMode = 'Invalid planned trajectory plot mode (%dth parameter). Parameter must be an integer between 0 an 1. For more info please visit help.';
 errDemRes = 'Invalid elevation model resolution (%dth parameter). Parameter must be a positive value in [m]. For more info please visit help.';
 errPlots = 'Invalid show plots option (%dth parameter). Parameter must be an integer between 0 an 1. For more info please visit help.';
+errDist = 'Invalid external distance parameter (%dth parameter). Parameter must be a vector of positive values in [m]. For more info please visit help.';
 errFind = 'Could not synchronize real and planned trajectories within the specified tolerance %.6gm. Please make sure the inputs are correct or increase the tolerance.';
 
 PlanTrjLegend = 'Planned trajectory waypoints';
@@ -75,6 +79,7 @@ RealTrjPlot = 2;
 TerrPlot = 1;
 PlanTrjPlot = 1;
 ShowPlots = 1;
+ExtDist = 0;
 %overenie parametrov %input parameters verification
 if ((size(RealTrj,2) ~= 3) || ~isnumeric(RealTrj))
     error(errReal)
@@ -105,40 +110,45 @@ for i = 2:2:size(varargin,2)
     
     switch varargin{i-1}
         case 'TrajFindPrec'
-            if (varargin{i} <= 0)
+            if ((sum(size(varargin{i})) > 2) || varargin{i} <= 0)
                 error(errFindPrec,i+3)
             end
             TrjFindPrec = varargin{i};
         case 'TerrainRes'
-            if (varargin{i} <= 0)
+            if ((sum(size(varargin{i})) > 2) || varargin{i} <= 0)
                 error(errTerrRes,i+3)
             end
             TerrPlotRes = varargin{i};
         case 'RealTrajMode'
-            if ((mod(varargin{i},1) ~= 0) || (varargin{i} < 0) || (varargin{i} > 3))
+            if ((sum(size(varargin{i})) > 2) || (mod(varargin{i},1) ~= 0) || (varargin{i} < 0) || (varargin{i} > 3))
                 error(errRealMode,i+3)
             end
             RealTrjPlot = varargin{i};
         case 'TerrainMode'
-            if ((mod(varargin{i},1) ~= 0) || (varargin{i} < 0) || (varargin{i} > 2))
+            if ((sum(size(varargin{i})) > 2) || (mod(varargin{i},1) ~= 0) || (varargin{i} < 0) || (varargin{i} > 2))
                 error(errTerrMode,i+3)
             end
             TerrPlot = varargin{i};
         case 'PlanTrajMode'
-            if ((mod(varargin{i},1) ~= 0) || (varargin{i} < 0) || (varargin{i} > 1))
+            if ((sum(size(varargin{i})) > 2) || (mod(varargin{i},1) ~= 0) || (varargin{i} < 0) || (varargin{i} > 1))
                 error(errPlanMode,i+3)
             end
             PlanTrjPlot = varargin{i};
         case 'DemRes'
-            if (varargin{i} <= 0)
+            if ((sum(size(varargin{i})) > 2) || varargin{i} <= 0)
                 error(errDemRes,i+3)
             end
             DemRes = varargin{i};
         case 'ShowPlots'
-            if ((mod(varargin{i},1) ~= 0) || (varargin{i} < 0) || (varargin{i} > 1))
+            if ((sum(size(varargin{i})) > 2) || (mod(varargin{i},1) ~= 0) || (varargin{i} < 0) || (varargin{i} > 1))
                 error(errPlots,i+3)
             end
             ShowPlots = varargin{i};
+        case 'ExternDist'
+            if ((length(varargin{i}) ~= length(RealTrj)) || (max(varargin{i} < 0) > 0))
+                error(errDist,i+3)
+            end
+            ExtDist = varargin{i};
         otherwise
             error(errArgs,errargs)
     end
@@ -227,7 +237,7 @@ RealTrjL_shrunk(:,1) = RealTrjL(iAll,1);
 RealTrjL_shrunk(:,2) = RealTrjL(iAll,2);
 RealTrjL_shrunk(:,3) = RealTrjL(iAll,3);
 %horizontalne posunutie bodov pre profilovy graf %horizontal displacement of waypoints for profile plot
-if (RealTrjPlot == 1)
+if ((RealTrjPlot == 1) && (sum(size(ExtDist)) == 2))
     RealTrjL_modified = RealTrjL;
     for i=1:size(RealTrjL_shrunk,1)-1
         c = sqrt((RealTrjL(iAll(i),1) - RealTrjL(iAll(i+1),1))^2 + (RealTrjL(iAll(i),2) - RealTrjL(iAll(i+1),2))^2);%su spravne
@@ -272,29 +282,36 @@ if (RealTrjPlot == 1)
 end
 %%
 %parametre pre grafy %parameters for graphs
-if (RealTrjPlot == 3)
-    RealTrj_shrunk_dist = zeros(size(RealTrjL_shrunk,1),1);
-    for i=2:size(RealTrj_shrunk_dist,1)
-        RealTrj_shrunk_dist(i) = RealTrj_shrunk_dist(i-1) + sqrt((RealTrjL_shrunk(i-1,1)-RealTrjL_shrunk(i,1))^2 + (RealTrjL_shrunk(i-1,2)-RealTrjL_shrunk(i,2))^2);
+if ((sum(size(ExtDist)) == 2))
+    if (RealTrjPlot == 3)
+        RealTrj_shrunk_dist = zeros(size(RealTrjL_shrunk,1),1);
+        for i=2:size(RealTrj_shrunk_dist,1)
+            RealTrj_shrunk_dist(i) = RealTrj_shrunk_dist(i-1) + sqrt((RealTrjL_shrunk(i-1,1)-RealTrjL_shrunk(i,1))^2 + (RealTrjL_shrunk(i-1,2)-RealTrjL_shrunk(i,2))^2);
+        end
+    elseif (RealTrjPlot == 1)
+        RealTrj_modified_dist = zeros(size(RealTrjL_modified,1),1);
+        for i=2:size(RealTrj_modified_dist,1)
+            RealTrj_modified_dist(i) = RealTrj_modified_dist(i-1) + sqrt((RealTrjL_modified(i-1,1)-RealTrjL_modified(i,1))^2 + (RealTrjL_modified(i-1,2)-RealTrjL_modified(i,2))^2);
+        end
+    elseif (RealTrjPlot == 2)
+        RealTrjL_unmodified = RealTrjL(iAll(1):iAll(end),:);
+        RealTrj_unmodified_dist = zeros(size(RealTrjL_unmodified,1),1);
+        for i=2:size(RealTrj_unmodified_dist,1)
+            RealTrj_unmodified_dist(i) = RealTrj_unmodified_dist(i-1) + sqrt((RealTrjL_unmodified(i-1,1)-RealTrjL_unmodified(i,1))^2 + (RealTrjL_unmodified(i-1,2)-RealTrjL_unmodified(i,2))^2);
+        end
     end
-elseif (RealTrjPlot == 1)
-    RealTrj_modified_dist = zeros(size(RealTrjL_modified,1),1);
-    for i=2:size(RealTrj_modified_dist,1)
-        RealTrj_modified_dist(i) = RealTrj_modified_dist(i-1) + sqrt((RealTrjL_modified(i-1,1)-RealTrjL_modified(i,1))^2 + (RealTrjL_modified(i-1,2)-RealTrjL_modified(i,2))^2);
-    end
-elseif (RealTrjPlot == 2)
-    RealTrjL_unmodified = RealTrjL(iAll(1):iAll(end),:);
-    RealTrj_unmodified_dist = zeros(size(RealTrjL_unmodified,1),1);
-    for i=2:size(RealTrj_unmodified_dist,1)
-        RealTrj_unmodified_dist(i) = RealTrj_unmodified_dist(i-1) + sqrt((RealTrjL_unmodified(i-1,1)-RealTrjL_unmodified(i,1))^2 + (RealTrjL_unmodified(i-1,2)-RealTrjL_unmodified(i,2))^2);
-    end
-end
 
-if (PlanTrjPlot > 0)
-    PlanTrj_dist = zeros(size(PlanTrjL,1),1);
-    for i=2:size(PlanTrj_dist,1)
-        PlanTrj_dist(i) = PlanTrj_dist(i-1) + sqrt((PlanTrjL(i-1,1)-PlanTrjL(i,1))^2 + (PlanTrjL(i-1,2)-PlanTrjL(i,2))^2);
+    if (PlanTrjPlot > 0)
+        PlanTrj_dist = zeros(size(PlanTrjL,1),1);
+        for i=2:size(PlanTrj_dist,1)
+            PlanTrj_dist(i) = PlanTrj_dist(i-1) + sqrt((PlanTrjL(i-1,1)-PlanTrjL(i,1))^2 + (PlanTrjL(i-1,2)-PlanTrjL(i,2))^2);
+        end
     end
+else
+    RealTrj_shrunk_dist = ExtDist(iAll) - ExtDist(iAll(1));
+    RealTrj_modified_dist = ExtDist(iAll(1):iAll(end)) - ExtDist(iAll(1));
+    RealTrj_unmodified_dist = ExtDist(iAll(1):iAll(end)) - ExtDist(iAll(1));
+    PlanTrj_dist = ExtDist(iAll) - ExtDist(iAll(1));
 end
 
 if (RealTrjPlot == 3)
@@ -318,10 +335,14 @@ if (TerrPlot == 2)
     else
         [TerrTrjOut] = trjmap2dem(TerrTrjOut,TerrMod);
     end
-    [terrdist] = trjstats(TerrTrjOut);
-    TerrTrjDistOut = zeros(1,size(TerrTrjOut,1));
-    for i=2:size(TerrTrjDistOut,2)
-        TerrTrjDistOut(i) = sum(terrdist(1:i-1));
+    if ((sum(size(ExtDist)) == 2))
+        [terrdist] = trjstats(TerrTrjOut);
+        TerrTrjDistOut = zeros(1,size(TerrTrjOut,1));
+        for i=2:size(TerrTrjDistOut,2)
+            TerrTrjDistOut(i) = sum(terrdist(1:i-1));
+        end
+    else
+        TerrTrjDistOut = ExtDist(iAll) - ExtDist(iAll(1));
     end
 elseif ((TerrPlot == 1) && (RealTrjPlot > 0))
     %pod skutocnou trajektoriou %below real trajectory
@@ -331,14 +352,18 @@ elseif ((TerrPlot == 1) && (RealTrjPlot > 0))
     else
         [TerrTrjOut] = trjmap2dem(TerrTrjOut,TerrMod);
     end
-    if (RealTrjPlot == 1)
-        TerrTrjDistOut = RealTrjDistOut;
-    else
-        [terrdist] = trjstats(TerrTrjOut);
-        TerrTrjDistOut = zeros(1,size(TerrTrjOut,1));
-        for i=2:size(TerrTrjDistOut,2)
-            TerrTrjDistOut(i) = sum(terrdist(1:i-1));
+    if ((sum(size(ExtDist)) == 2))
+        if (RealTrjPlot == 1)
+            TerrTrjDistOut = RealTrjDistOut;
+        else
+            [terrdist] = trjstats(TerrTrjOut);
+            TerrTrjDistOut = zeros(1,size(TerrTrjOut,1));
+            for i=2:size(TerrTrjDistOut,2)
+                TerrTrjDistOut(i) = sum(terrdist(1:i-1));
+            end
         end
+    else
+        TerrTrjDistOut = RealTrjDistOut;
     end
 else
     TerrTrjDistOut = 0;
@@ -371,7 +396,7 @@ if (ShowPlots == 1)
     if (TerrPlot > 0)
         plot(TerrTrjDistOut,TerrTrjOut(:,3),'-r')
     end
-
+    %definicie legendy %legend definitions
     if (PlanTrjPlot > 0 && RealTrjPlot > 0)
         if (TerrPlot > 0)
             legend(PlanTrjLegend,RealTrjLegend,TerrLegend,'location','best')

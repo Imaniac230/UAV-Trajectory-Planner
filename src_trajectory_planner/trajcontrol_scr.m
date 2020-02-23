@@ -234,14 +234,15 @@ elseif (~strcmp(custompointfilepath,''))
 else
     polygon = inputshape;
 end
-fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
 fprintf(FID,'%s Loading digital elevation model ...\n',char(datetime('now')));
 tic
 model = load(modfilepath);
 modeltmp = model(:,1);
 model(:,1) = model(:,2);
 model(:,2) = modeltmp;
-fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
+
 
 if (strcmp(customlinefilepath,'') && strcmp(custompointfilepath,''))
     fprintf(FID,'%s Boundary polygon coordinates in WGS 84 (lat, lon):\n',char(datetime('now')));
@@ -254,7 +255,7 @@ fprintf(FID,'\n\n');
 fprintf(FID,'%s Initiating function "trjphotogr2linedist" ...\n',char(datetime('now')));
 tic
 photooptim_linedist = trjphotogr2linedist(Focal_Length,Height_Above_Ground_Level,CCD_Sensor_Size,Side_Overlap_Factor,CCD_Sensor_Parameter_Option);
-fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
 fprintf(FID,'%s Calculated horizontal separation of trajectory lines for %.6g%% side overlap: %.3fm\n\n',char(datetime('now')),Side_Overlap_Factor,photooptim_linedist);
 
 if (strcmp(customlinefilepath,'') && strcmp(custompointfilepath,''))
@@ -276,7 +277,7 @@ if (strcmp(customlinefilepath,'') && strcmp(custompointfilepath,''))
             outhortraj = trjgenhor(polygon,photooptim_linedist,Polygon_Reference_Point_Option,Fill_Entire_Polygon);
         end
     end
-    fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+    fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
 end
 if (strcmp(custompointfilepath,''))
     fprintf(FID,'%s Number of points: %d\n%s Number of coordinates: %d\n',char(datetime('now')),size(outhortraj,1),char(datetime('now')),size(outhortraj,2));
@@ -291,18 +292,18 @@ if (strcmp(custompointfilepath,''))
         if (Perpendicular_Safe_Distance)
             tic
             [cuttraj,nwaypoints,mpwpsepar,grad,modeltraj] = trjcutseghorvar(outhortraj,model,Gradient_Difference_Tolerance,Perpendicular_Safe_Distance);
-            fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+            fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
         else
             tic
             [cuttraj,nwaypoints,mpwpsepar,grad,modeltraj] = trjcutseghorvar(outhortraj,model,Gradient_Difference_Tolerance);
-            fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+            fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
         end
         [wpdist1,~,adp1] = trjstats(cuttraj);
     else
         fprintf(FID,'%s Initiating function "trjcutseghor" ...\n',char(datetime('now')));
         tic
         [cuttraj,nwaypoints] = trjcutseghor(outhortraj,Minimal_Trajectory_Waypoint_Separation);
-        fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+        fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
         fprintf(FID,'%s Number of points: %d\n%s Number of coordinates: %d\n',char(datetime('now')),size(cuttraj,1),char(datetime('now')),size(cuttraj,2));
         [wpdist1,~,adp1,adl,numl] = trjstats(cuttraj);
         fprintf(FID,'%s Average horizontal distance between trajectory lines: %.3fm\n',char(datetime('now')),adl);
@@ -312,7 +313,7 @@ if (strcmp(custompointfilepath,''))
         fprintf(FID,'%s Initiating function "trjmap2dem" ...\n',char(datetime('now')));
         tic
         [cuttraj,modeltraj,mpwpsepar] = trjmap2dem(cuttraj,model);
-        fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+        fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
     end
 else
     fprintf(FID,'%s Number of points: %d\n%s Number of coordinates: %d\n',char(datetime('now')),size(cuttraj,1),char(datetime('now')),size(cuttraj,2));
@@ -324,7 +325,7 @@ else
     fprintf(FID,'%s Initiating function "trjmap2dem" ...\n',char(datetime('now')));
     tic
     [cuttraj,modeltraj,mpwpsepar] = trjmap2dem(cuttraj,model);
-    fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+    fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
 end
 fprintf(FID,'%s Number of points: %d\n%s Number of coordinates: %d\n',char(datetime('now')),size(cuttraj,1),char(datetime('now')),size(cuttraj,2));
 [wpdist2,ah,adp2,adl,numl] = trjstats(cuttraj);
@@ -339,11 +340,11 @@ switch Vertical_Trajectory_Algorithm
         fprintf(FID,'%s Initiating function "trjoffsetver" ...\n',char(datetime('now')));
         tic
         [fintraj] = trjoffsetver(cuttraj,Height_Above_Ground_Level);
-        fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+        fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
         fprintf(FID,'%s Initiating function "trjfilthor" ...\n',char(datetime('now')));
         tic
         [fintraj] = trjfilthor(fintraj,Minimal_Trajectory_Waypoint_Separation);
-        fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+        fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
         fprintf(FID,'%s Number of points: %d\n%s Number of coordinates: %d\n',char(datetime('now')),size(fintraj,1),char(datetime('now')),size(fintraj,2));
         [wpdist,ah1,adp] = trjstats(fintraj);
         fprintf(FID,'%s Average horizontal distance between waypoints: %.3fm\n',char(datetime('now')),adp);
@@ -355,7 +356,7 @@ switch Vertical_Trajectory_Algorithm
         fprintf(FID,'%s Initiating function "trjradialdistver" ...\n',char(datetime('now')));
         tic
         [fintraj] = trjradialdistver(cuttraj,Height_Above_Ground_Level,model,Minimal_Trajectory_Waypoint_Separation);
-        fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+        fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
         [wpdist,ah1,adp] = trjstats(fintraj);
         [wptrr,awptrr] = trjterrfilt(fintraj,model);
         if (min(wptrr) < (Height_Above_Ground_Level))
@@ -532,7 +533,7 @@ if (Profile_2D_Plot)
     end
     Y6 = fintraj(:,3);
 end
-fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
 
 if (Full_3D_Plot)
     %parameters for 3D plots
@@ -579,7 +580,7 @@ if (Full_3D_Plot)
             TERRAINPLOT3D(:,3) = TERRAINPLOT3D(:,3) - Geoid_Ellipsoid_Separation;
         end
     end
-    fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+    fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
 end
 
 %2D plots
@@ -667,7 +668,7 @@ if (Profile_2D_Plot)
     ylim([min(TERRAINPLOT2D(:,3))-1 max(fintraj(:,3))+1])
     legend('terrain height (gl)','trajectory height (agl)','Location','best')
 end
-fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
 
 %3D plots
 if (Full_3D_Plot)
@@ -697,7 +698,7 @@ if (Full_3D_Plot)
     stem3(polygon(:,2),polygon(:,1),ones(size(polygon,1),1)*max(s2(:)),'g','MarkerFaceColor','g','BaseValue',min(s1(:)));
     plot3(fintraj(1,2),fintraj(1,1),fintraj(1,3),'dg','MarkerSize',10,'LineWidth',1.5)
     legend('terrain gl','height agl','polygon','starting point')
-    fprintf(FID,'%s Done, time elapsed: %fs\n\n',char(datetime('now')),toc);
+    fprintf(FID,'%s Done, time elapsed: %d min. %f s\n\n',char(datetime('now')),floor(toc/60),(toc/60-floor(toc/60))*60);
 end
 %%
 %final cleanup
@@ -706,7 +707,7 @@ if (Plots_In_Local_Frame && Full_3D_Plot)
     fintraj = fintraj_original;
 end
 rmpath('.\miscellaneous\', '.\horizontal_trajectory\', '.\vertical_trajectory\')
-fprintf(FID,'%s The whole script took: %fs\n\n',char(datetime('now')),toc(scriptstart));
+fprintf(FID,'%s The whole script took: %d min. %f s\n\n',char(datetime('now')),floor(toc(scriptstart)/60),(toc(scriptstart)/60-floor(toc(scriptstart)/60))*60);
 if (Log_To_File)
     diary off
     fprintf('%s Log file "%s" created!\n\n',char(datetime('now')),logfilepath);
