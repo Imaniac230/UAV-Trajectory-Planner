@@ -3,41 +3,53 @@
 Source files for the vertical and horizontal UAV trajectory planner and flight analyzer. This project was created as a bachelor's thesis.
 Full original thesis in native Slovak language can be found [here](https://www.vutbr.cz/www_base/zav_prace_soubor_verejne.php?file_id=190920).
 
+# Table of Contents
+
+* [File structure](#file-structure)
+	* [`src_flight_analyzer`](#src_flight_analyzer)
+	* [`src_trajectory_planner`](#src_trajectory_planner)
+		* [`/horizontal_trajectory`](#horizontal_trajectory)
+		* [`/vertical_trajectory`](#vertical_trajectory)
+		* [`/miscellaneous`](#miscellaneous)
+	* [`data`](#data)
+* [QGIS Shapefiles](#qgis-shapefiles)
+* [Author](#author)
+
 # File structure
 
-## src_flight_analyzer
+## `src_flight_analyzer`
 
-* **analyzeFlight_DJI_scr.m** - control script used for setting input parameters for the analyzer
-* **analyzeFlight_DJI.m** - Matlab function source file of the flight analyzer
+* **`analyzeFlight_DJI_scr.m`** - control script used for setting input parameters for the analyzer
+* **`analyzeFlight_DJI.m`** - Matlab function source file of the flight analyzer
 
-## src_trajectory_planner
+## `src_trajectory_planner`
 
-* **trajcontrol_scr_user.m** - control script used for setting input parameters for the trajectory planner
-* **trajcontrol_scr.m** - control script used for calling functions and plotting final trajectory graphs in Matlab
+* **`trajcontrol_scr_user.m`** - control script used for setting input parameters for the trajectory planner
+* **`trajcontrol_scr.m`** - control script used for calling functions and plotting final trajectory graphs in Matlab
 
-### /horizontal_trajectory
- * **trjgenhor.m** - Matlab function source file of the horizontal trajectory generator
- * **trjphotogr2linedist.m** - Matlab function source file of the trajectory line separation for photo side overlap
- * **trjcutseghor.m** - Matlab function source file of the horizontal waypoint generator
- * **trjcutseghorvar.m** - Matlab function source file of the variable horizontal waypoint generator
- * **trjfilthor.m** - Matlab function source file of the horizontal waypoint filter
-### /vertical_trajectory
- * **trjmap2dem.m** - Matlab function source file of trajectory and digital elevation model synchronizer
- * **trjoffsetver.m** - Matlab function source file of the vertical offset algorithm
- * **trjradialdistver.m** - Matlab function source file of the radial distance algorithm
-### /miscellaneous
- * **shapecreate.m** - Matlab function source file of the custom shapefile creator
- * **trjstats.m** - Matlab function source file of the trajectory stats analyzer
- * **trjterrfilt.m** - Matlab function source file of the terrain-trajectory separation analyzer and filter
- * **trj2csv_ugcs.m** - Matlab function source file of the trajectory csv file creator
- * **demresol.m** - Matlab function source file of the digital elevation model resolution calculator
- * **trjascentlim.m** - Matlab function source file of the UAV ascent limit verifier
+### `/horizontal_trajectory`
+ * **`trjgenhor.m`** - Matlab function source file of the horizontal trajectory generator
+ * **`trjphotogr2linedist.m`** - Matlab function source file of the trajectory line separation for photo side overlap
+ * **`trjcutseghor.m`** - Matlab function source file of the horizontal waypoint generator
+ * **`trjcutseghorvar.m`** - Matlab function source file of the variable horizontal waypoint generator
+ * **`trjfilthor.m`** - Matlab function source file of the horizontal waypoint filter
+### `/vertical_trajectory`
+ * **`trjmap2dem.m`** - Matlab function source file of trajectory and digital elevation model synchronizer
+ * **`trjoffsetver.m`** - Matlab function source file of the vertical offset algorithm
+ * **`trjradialdistver.m`** - Matlab function source file of the radial distance algorithm
+### `/miscellaneous`
+ * **`shapecreate.m`** - Matlab function source file of the custom shapefile creator
+ * **`trjstats.m`** - Matlab function source file of the trajectory stats analyzer
+ * **`trjterrfilt.m`** - Matlab function source file of the terrain-trajectory separation analyzer and filter
+ * **`trj2csv_ugcs.m`** - Matlab function source file of the trajectory csv file creator
+ * **`demresol.m`** - Matlab function source file of the digital elevation model resolution calculator
+ * **`trjascentlim.m`** - Matlab function source file of the UAV ascent limit verifier
 
-## data
+## `data`
 Input and output data files structure for the planner and analyzer.
 
 # QGIS shapefiles
-For use of exported shapefiles from QGIS only the *.shp, *.shx and *.dbf files are necessary.
+For use of exported shapefiles from QGIS only the `*.shp`, `*.shx` and `*.dbf` files are necessary.
 
 # Author
 Tomáš Horeličan - horelican.t@gmail.com
