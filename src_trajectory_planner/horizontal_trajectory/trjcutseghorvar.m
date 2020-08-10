@@ -43,7 +43,7 @@ if (size(varargin,2) > 1)
     error('Too many input arguments.')
 end
 if (nargin == 4)
-    if (~isnumeric(varargin{1}) || sum(size(varargin{1}) ~= 2) || varargin{1} < 0)
+    if (~isnumeric(varargin{1}) || (sum(size(varargin{1})) ~= 2) || varargin{1} < 0)
         error(errDist)
     end
     SafeDist = varargin{1};
@@ -62,7 +62,7 @@ DistVector = zeros(1,size(Traj2Grad,1));
 for i = 2:size(DistVector,2)
     DistVector(i) = sum(WPdist(1:i-1));
 end
-TrjGrad = gradient(Traj2GradL(:,3),DistVector);
+TrjGrad = del2(Traj2GradL(:,3),DistVector);
 CTrajL = zeros(size(Traj2GradL));
 CTrajL(1,:) = Traj2GradL(1,:);
 WpGrad = zeros(1,size(CTrajL,1));
@@ -76,7 +76,7 @@ switch nargin
     %jednorozmerna orientacia %one dimensional orientation
     case 3
         for i = 2:size(Traj2GradL,1)
-            if ((abs(abs(TrjGrad(i)) - abs(TrjGrad(i-1))) > GradCmpTol) || isequal(ismembertol(Traj2Grad(i,1:2),InTraj,0.000000001),[1 1]))
+            if ((abs(TrjGrad(i)) > GradCmpTol) || isequal(ismembertol(Traj2Grad(i,1:2),InTraj,0.000000001),[1 1]))
                 PrevIndex = PrevIndex + 1;
                 CTrajL(PrevIndex,:) = Traj2GradL(i,:);
                 WpGrad(PrevIndex) = TrjGrad(i);
@@ -143,6 +143,7 @@ switch nargin
         for i = 2:size(Traj2GradL,1)
             SafeV = SafeVfullP((i-1)*size(SafeV,1)+1:i*size(SafeV,1),3);
             SafeVgrad = gradient(SafeV,InitSeg);
+            SafeVlap = del2(SafeV,InitSeg);
             %detekcia zmeny gradientov vektorov v pozdlznom smere
             %detection of gradient changes in vectors in the longitudinal direction
             SetPt = false;
@@ -154,26 +155,26 @@ switch nargin
                 %urcenie profilu terenu a detekcia zmeny gradientu v kolmom smere
                 %determination of the terrain profile and detection of gradient changes in the perpendicular direction
                 if (SafeCount == 1)
-                    if (((SafeVgleft < 0) && (SafeVgright > 0)) && (max(abs(diff(abs(SafeVgrad)))) > GradCmpTol))
+                    if (((SafeVgleft < 0) && (SafeVgright > 0)) && (max(abs(SafeVlap)) > GradCmpTol))
                         SetPt = true;
-                    elseif (((SafeVgleft > 0) && (SafeVgright > 0)) && (max(abs(diff(abs(SafeVgrad(SafeCount+1:end))))) > GradCmpTol))
+                    elseif (((SafeVgleft > 0) && (SafeVgright > 0)) && (max(abs(SafeVlap(SafeCount+1:end))) > GradCmpTol))
                         SetPt = true;
-                    elseif ((SafeVgleft < 0) && (SafeVgright < 0) && (max(abs(diff(abs(SafeVgrad(1:SafeCount+1))))) > GradCmpTol))
+                    elseif ((SafeVgleft < 0) && (SafeVgright < 0) && (max(abs(SafeVlap(1:SafeCount+1))) > GradCmpTol))
                         SetPt = true;
                     end
                 else
-                    if (((SafeVgleft < 0) && (SafeVgright > 0)) && (max(abs(diff(abs(SafeVgrad)))) > GradCmpTol))
+                    if (((SafeVgleft < 0) && (SafeVgright > 0)) && (max(abs(SafeVlap)) > GradCmpTol))
                         SetPt = true;
-                    elseif (((SafeVgleft > 0) && (SafeVgright > 0)) && (max(abs(diff(abs(SafeVgrad(SafeCount+2:end))))) > GradCmpTol))
+                    elseif (((SafeVgleft > 0) && (SafeVgright > 0)) && (max(abs(SafeVlap(SafeCount+2:end))) > GradCmpTol))
                         SetPt = true;
-                    elseif ((SafeVgleft < 0) && (SafeVgright < 0) && (max(abs(diff(abs(SafeVgrad(1:SafeCount))))) > GradCmpTol))
+                    elseif ((SafeVgleft < 0) && (SafeVgright < 0) && (max(abs(SafeVlap(1:SafeCount))) > GradCmpTol))
                         SetPt = true;
                     end
                 end
             end
             SafeVglast = SafeVgrad;
             %umiestnenie bodu %waypoint placement
-            if ((abs(abs(TrjGrad(i)) - abs(TrjGrad(i-1))) > GradCmpTol) || isequal(ismembertol(Traj2Grad(i,1:2),InTraj,0.000000001),[1 1]) || (SetPt))
+            if ((abs(TrjGrad(i)) > GradCmpTol) || isequal(ismembertol(Traj2Grad(i,1:2),InTraj,0.000000001),[1 1]) || (SetPt))
                 PrevIndex = PrevIndex + 1;
                 CTrajL(PrevIndex,:) = Traj2GradL(i,:);
                 WpGrad(PrevIndex) = TrjGrad(i);
